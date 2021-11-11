@@ -11,3 +11,13 @@ The app fetches the grid tariffs 5 seconds into each hour. Since the tariffs wil
 I'm quite sure that someone will make a better integration for Home Assistant fairly soon - at which time this app will be obsolete - and I'm looking forward to that.
 
 In `apps.yaml`, one argument is `log_progress`. When set to `true`, the app will output a log on every (hourly) run to the Appdaemon log. Set it to `false` to turn that off.
+
+If fetching grid tariffs fail for some reason, the app will output a warning to the Appdaemon log and try again once a minute until successful. If you have more than 3 meters, and to avoid hitting the API call limitation, increase the waiting period in these lines (the number is the number of seconds to the next attempt - so here every minute):
+
+```
+      run_in(self._initialize, 60)
+```
+
+```
+      run_in(self.hourly_call, 60)
+```
