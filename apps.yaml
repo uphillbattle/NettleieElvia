@@ -1,0 +1,9 @@
+---
+nettleie_elvia:
+  module: nettleie_elvia
+  class: NettleieElvia
+  log_progress: true
+  ocp_apim_subscription_key: !secret elvia_subscription_key
+  malerid_hytta: !secret elvia_malerid_hytta
+  malerid_oppe: !secret elvia_malerid_oppe
+  malerid_nede: !secret elvia_malerid_nede
