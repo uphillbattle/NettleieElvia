@@ -25,6 +25,7 @@ class NettleieElvia(hass.Hass):
     if (self.log_progress):
       self.output_log()
 
+
   def hourly_call(self, kwargs):
     self.set_request_data()
     self.set_times()
