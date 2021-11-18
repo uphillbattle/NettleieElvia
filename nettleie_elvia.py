@@ -10,10 +10,10 @@ class NettleieElvia(hass.Hass):
   def initialize(self):
     self.log_progress  = (self.args["log_progress"])
     self.set_request_data()
-    self.hourly_call()
+    self.run_in(self.hourly_call, 1)
 
 
-  def hourly_call(self):
+  def hourly_call(self, kwargs):
     self.set_times()
     self.fetch_data(self.hourly_call, 60)
     self.set_states()
@@ -57,7 +57,7 @@ class NettleieElvia(hass.Hass):
       self.maler_hytta_response_json    = requests.post(self.url, json = self.bodyhytta, headers = self.headers)
     except Exception as e:
       self.log('__function__: Ooops, API request failed, retrying in {} seconds...\n{}'.format(wait_period, e), log="main_log", level="WARNING")
-      run_in(retry_function, wait_period)
+      self.run_in(retry_function, wait_period)
 
 
   def set_states(self):
