@@ -64,30 +64,30 @@ class NettleieElvia(hass.Hass):
     self.maler_oppe_response          = json.loads(self.maler_oppe_response_json.text)
     self.fixed_price_per_hour_oppe    = self.maler_oppe_response["gridTariffCollections"][0]["gridTariff"]["tariffPrice"]["priceInfo"][0]["fixedPrices"][0]["priceLevel"][0]["total"]
     self.variable_price_per_hour_oppe = self.maler_oppe_response["gridTariffCollections"][0]["gridTariff"]["tariffPrice"]["priceInfo"][0]["variablePrice"]["total"]
-    self.set_state('sensor.nettleie_hjemme_oppe_per_time', state=self.fixed_price_per_hour_oppe,    attributes={'friendly_name': 'Nettleie per time hjemme oppe', 'unit_of_measurement': 'NOK/h', 'icon': 'mdi:currency-usd'})
-    self.set_state('sensor.nettleie_hjemme_oppe_per_kwh',  state=self.variable_price_per_hour_oppe, attributes={'friendly_name': 'Nettleie per kWh hjemme oppe', 'unit_of_measurement': 'NOK/kWh', 'icon': 'mdi:currency-usd'})
+    self.set_state('sensor.nettleie_hjemme_oppe_kapasitetsledd', state=self.fixed_price_per_hour_oppe,    attributes={'friendly_name': 'Nettleie per time hjemme oppe', 'unit_of_measurement': 'NOK/h', 'icon': 'mdi:currency-usd'})
+    self.set_state('sensor.nettleie_hjemme_oppe_forbruksledd',  state=self.variable_price_per_hour_oppe, attributes={'friendly_name': 'Nettleie per kWh hjemme oppe', 'unit_of_measurement': 'NOK/kWh', 'icon': 'mdi:currency-usd'})
 
     self.maler_nede_response          = json.loads(self.maler_nede_response_json.text)
     self.fixed_price_per_hour_nede    = self.maler_nede_response["gridTariffCollections"][0]["gridTariff"]["tariffPrice"]["priceInfo"][0]["fixedPrices"][0]["priceLevel"][0]["total"]
     self.variable_price_per_hour_nede = self.maler_nede_response["gridTariffCollections"][0]["gridTariff"]["tariffPrice"]["priceInfo"][0]["variablePrice"]["total"]
-    self.set_state('sensor.nettleie_hjemme_nede_per_time', state=self.fixed_price_per_hour_nede,    attributes={'friendly_name': 'Nettleie per time hjemme nede', 'unit_of_measurement': 'NOK/h', 'icon': 'mdi:currency-usd'})
-    self.set_state('sensor.nettleie_hjemme_nede_per_kwh',  state=self.variable_price_per_hour_nede, attributes={'friendly_name': 'Nettleie per kWh hjemme nede', 'unit_of_measurement': 'NOK/kWh', 'icon': 'mdi:currency-usd'})
+    self.set_state('sensor.nettleie_hjemme_nede_kapasitetsledd', state=self.fixed_price_per_hour_nede,    attributes={'friendly_name': 'Nettleie per time hjemme nede', 'unit_of_measurement': 'NOK/h', 'icon': 'mdi:currency-usd'})
+    self.set_state('sensor.nettleie_hjemme_nede_forbruksledd',  state=self.variable_price_per_hour_nede, attributes={'friendly_name': 'Nettleie per kWh hjemme nede', 'unit_of_measurement': 'NOK/kWh', 'icon': 'mdi:currency-usd'})
 
     self.maler_hytta_response          = json.loads(self.maler_hytta_response_json.text)
     self.fixed_price_per_hour_hytta    = self.maler_hytta_response["gridTariffCollections"][0]["gridTariff"]["tariffPrice"]["priceInfo"][0]["fixedPrices"][0]["priceLevel"][0]["total"]
     self.variable_price_per_hour_hytta = self.maler_hytta_response["gridTariffCollections"][0]["gridTariff"]["tariffPrice"]["priceInfo"][0]["variablePrice"]["total"]
-    self.set_state('sensor.nettleie_hytta_per_time', state=self.fixed_price_per_hour_hytta,    attributes={'friendly_name': 'Nettleie per time hytta', 'unit_of_measurement': 'NOK/h', 'icon': 'mdi:currency-usd'})
-    self.set_state('sensor.nettleie_hytta_per_kwh',  state=self.variable_price_per_hour_hytta, attributes={'friendly_name': 'Nettleie per kWh hytta', 'unit_of_measurement': 'NOK/kWh', 'icon': 'mdi:currency-usd'})
+    self.set_state('sensor.nettleie_hytta_kapasitetsledd', state=self.fixed_price_per_hour_hytta,    attributes={'friendly_name': 'Nettleie per time hytta', 'unit_of_measurement': 'NOK/h', 'icon': 'mdi:currency-usd'})
+    self.set_state('sensor.nettleie_hytta_forbruksledd',  state=self.variable_price_per_hour_hytta, attributes={'friendly_name': 'Nettleie per kWh hytta', 'unit_of_measurement': 'NOK/kWh', 'icon': 'mdi:currency-usd'})
 
 
   def output_log(self):
     self.log("__function__: Time now                    = %s" % self.current_datetime, log="main_log", level="INFO")
     self.log("__function__: Pretty Last hour            = %s" % self.pretty_last_hour, log="main_log", level="INFO")
     self.log("__function__: Pretty Next hour            = %s" % self.pretty_next_hour, log="main_log", level="INFO")
-    self.log("__function__: oppe  fixedPrice per hour   = %f" % self.fixed_price_per_hour_oppe, log="main_log", level="INFO")
-    self.log("__function__: oppe  variablePrice per kWh = %f" % self.variable_price_per_hour_oppe, log="main_log", level="INFO")
-    self.log("__function__: nede  fixedPrice per hour   = %f" % self.fixed_price_per_hour_nede, log="main_log", level="INFO")
-    self.log("__function__: nede  variablePrice per kWh = %f" % self.variable_price_per_hour_nede, log="main_log", level="INFO")
-    self.log("__function__: hytta fixedPrice per hour   = %f" % self.fixed_price_per_hour_hytta, log="main_log", level="INFO")
-    self.log("__function__: hytta variablePrice per kWh = %f" % self.variable_price_per_hour_hytta, log="main_log", level="INFO")
+    self.log("__function__: oppe  kapasitetsledd (NOK/h)= %f" % self.fixed_price_per_hour_oppe, log="main_log", level="INFO")
+    self.log("__function__: oppe  forbruksledd (NOK/kWh)= %f" % self.variable_price_per_hour_oppe, log="main_log", level="INFO")
+    self.log("__function__: nede  kapasitetsledd (NOK/h)= %f" % self.fixed_price_per_hour_nede, log="main_log", level="INFO")
+    self.log("__function__: nede  forbruksledd (NOK/kWh)= %f" % self.variable_price_per_hour_nede, log="main_log", level="INFO")
+    self.log("__function__: hytta kapasitetsledd (NOK/h)= %f" % self.fixed_price_per_hour_hytta, log="main_log", level="INFO")
+    self.log("__function__: hytta forbruksledd (NOK/kWh)= %f" % self.variable_price_per_hour_hytta, log="main_log", level="INFO")
     self.log("__function__: Next call                   = %s" % self.next_call, log="main_log", level="INFO")
