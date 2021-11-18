@@ -8,26 +8,12 @@ import datetime
 class NettleieElvia(hass.Hass):
 
   def initialize(self):
-    self._initialize()
-
-
-  def _initialize(self):
     self.log_progress  = (self.args["log_progress"])
-
     self.set_request_data()
-    self.set_times()
-    self.fetch_data(self._initialize, 60)
-    self.set_states()
-
-    self.next_call = self.next_hour_datetime.replace(second=5, microsecond=0, minute=0)
-    self.run_at_handle = self.run_at(self.hourly_call, self.next_call)
-
-    if (self.log_progress):
-      self.output_log()
+    self.hourly_call()
 
 
-  def hourly_call(self, kwargs):
-    self.set_request_data()
+  def hourly_call(self):
     self.set_times()
     self.fetch_data(self.hourly_call, 60)
     self.set_states()
