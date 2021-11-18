@@ -56,7 +56,7 @@ class NettleieElvia(hass.Hass):
       self.maler_nede_response_json     = requests.post(self.url, json = self.bodynede, headers = self.headers)
       self.maler_hytta_response_json    = requests.post(self.url, json = self.bodyhytta, headers = self.headers)
     except Exception as e:
-      self.log('__function__: Ooops, API request failed, retrying in 60 seconds...\n{}'.format(e), log="main_log", level="WARNING")
+      self.log('__function__: Ooops, API request failed, retrying in {} seconds...\n{}'.format(wait_period, e), log="main_log", level="WARNING")
       run_in(retry_function, wait_period)
 
 
