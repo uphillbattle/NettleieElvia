@@ -1,9 +1,25 @@
 ---
-nettleie_elvia:
+nettleie_elvia_hytta:
   module: nettleie_elvia
   class: NettleieElvia
   log_progress: true
   ocp_apim_subscription_key: !secret elvia_subscription_key
-  malerid_hytta: !secret elvia_malerid_hytta
-  malerid_oppe: !secret elvia_malerid_oppe
-  malerid_nede: !secret elvia_malerid_nede
+  malerid: !secret elvia_malerid_hytta
+  sensorname: 'sensor.nettleie_hytta'
+  sensoralias: 'Nettleie hytta'
+nettleie_elvia_oppe:
+  module: nettleie_elvia
+  class: NettleieElvia
+  log_progress: true
+  ocp_apim_subscription_key: !secret elvia_subscription_key
+  malerid: !secret elvia_malerid_oppe
+  sensorname: 'sensor.nettleie_hjemme_oppe'
+  sensoralias: 'Nettleie hjemme oppe'
+nettleie_elvia_nede:
+  module: nettleie_elvia
+  class: NettleieElvia
+  log_progress: true
+  ocp_apim_subscription_key: !secret elvia_subscription_key
+  malerid: !secret elvia_malerid_nede
+  sensorname: 'sensor.nettleie_hjemme_nede'
+  sensoralias: 'Nettleie hjemme nede'
