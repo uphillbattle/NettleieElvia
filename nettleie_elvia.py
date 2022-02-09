@@ -10,12 +10,14 @@ class NettleieElvia(hass.Hass):
   def initialize(self):
     self.log_progress  = (self.args["log_progress"])
     self.set_request_data()
+    self.set_correction_data()
     self.run_in(self.hourly_call, 1)
 
 
   def hourly_call(self, kwargs):
     self.set_times()
     self.fetch_data(self.hourly_call, 60)
+    self.set_correction()
     self.set_states()
 
     self.next_call = self.next_hour_datetime.replace(second=5, microsecond=0, minute=0)
@@ -31,10 +33,14 @@ class NettleieElvia(hass.Hass):
     self.url       = "https://elvia.azure-api.net/grid-tariff/api/1/tariffquery/meteringpointsgridtariffs"
     self.body      = {"meteringPointIds": [ self.args["malerid"] ]}
 
+  def set_correction_data(self):
+    self.end_correction_period = datetime.datetime(2022, 4, 1)
+    self.correction_amount     = (0.1669 - 0.0891)*1.25
 
   def set_times(self):
     self.current_datetime   = datetime.datetime.now()
     self.next_hour_datetime = self.current_datetime + datetime.timedelta(hours=1)
+    self.tomorrow_datetime  = self.current_datetime + datetime.timedelta(hours=24)
     self.next_day_datetime  = self.current_datetime + datetime.timedelta(hours=48)
     self.pretty_last_hour   = str(self.current_datetime.year) + "-" + str(self.current_datetime.month).zfill(2) + "-" + \
                               str(self.current_datetime.day).zfill(2) + "T" + "00:00:00"
@@ -58,6 +64,17 @@ class NettleieElvia(hass.Hass):
       self.run_in(retry_function, wait_period)
 
 
+  def set_correction(self):
+    if (self.current_datetime < self.end_correction_period):
+      self.correction_today = self.correction_amount
+    else:
+      self.correction_today = 0.0
+    if (self.tomorrow_datetime < self.end_correction_period):
+      self.correction_tomorrow = self.correction_amount
+    else:
+      self.correction_tomorrow = 0.0
+
+
   def set_states(self):
     self.maler_response = json.loads(self.maler_response_json.text)
     self.priceInfo      = self.maler_response["gridTariffCollections"][0]["gridTariff"]["tariffPrice"]["priceInfo"]
@@ -71,15 +88,15 @@ class NettleieElvia(hass.Hass):
       endTime   = element["expiredAt"]
       value     = element["variablePrice"]["total"]
       if startTime[0:10] == self.todayString:
-        self.variable_price_per_hour_array_today_raw.append({"start": startTime, "end": endTime, "value": value})
-        self.variable_price_per_hour_array_today.append(value)
+        self.variable_price_per_hour_array_today_raw.append({"start": startTime, "end": endTime, "value": value - self.correction_today})
+        self.variable_price_per_hour_array_today.append(value - self.correction_today)
       else:
-        self.variable_price_per_hour_array_tomorrow_raw.append({"start": startTime, "end": endTime, "value": value})
-        self.variable_price_per_hour_array_tomorrow.append(value)
+        self.variable_price_per_hour_array_tomorrow_raw.append({"start": startTime, "end": endTime, "value": value - self.correction_tomorrow})
+        self.variable_price_per_hour_array_tomorrow.append(value - self.correction_tomorrow)
 
     self.fixed_price_per_hour    = self.priceInfo[self.current_hour]["fixedPrices"][0]["priceLevel"][0]["total"]
     self.fixed_price_level       = self.priceInfo[self.current_hour]["fixedPrices"][0]["priceLevel"][0]["level"]
-    self.variable_price_per_hour = self.priceInfo[self.current_hour]["variablePrice"]["total"]
+    self.variable_price_per_hour = self.priceInfo[self.current_hour]["variablePrice"]["total"] - self.correction_today
     self.variable_price_level    = self.priceInfo[self.current_hour]["variablePrice"]["level"]
 
     self.set_state(self.args["sensorname"] + '_kapasitetsledd', \
