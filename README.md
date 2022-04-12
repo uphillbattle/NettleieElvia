@@ -1,9 +1,9 @@
 # NettleieElvia
 
-*Updated on 2021-11-30:* 
-App now fetches grid tariffs for only one meter, but can be instantiated for the number of meters needed. `apps.yaml` shows an example with three instances (for one meter each). Delete (or add) instances as needed in `apps.yaml`.
+*Updated on 2022-04-12:* 
+Update to conform with new DIGIN API.
 
-A very crude AppDaemon app for use with Home Assistant that fetches grid tariffs (NOK per hour and NOK per kWh) from Elvia's new GridTariff API (https://elvia.portal.azure-api.net/). Refer to the API for documentation (https://assets.ctfassets.net/jbub5thfds15/1mF3J3xVf9400SDuwkChUC/a069a61a0257ba8c950432000bdefef3/Elvia_GridTariffAPI_for_smart_house_purposes_v1_1_20210212.doc.pdf) and guidance for getting a subscription key (https://www.elvia.no/smart-forbruk/api-for-nettleie-priser-kan-gjore-hjemmet-ditt-smartere/). 
+A very crude AppDaemon app for use with Home Assistant that fetches grid tariffs (NOK per hour and NOK per kWh) from Elvia's new GridTariff API (https://elvia.portal.azure-api.net/). Refer to the API for documentation (https://assets.ctfassets.net/jbub5thfds15/3Jm2yspPw1kFmDEkzdjhfw/e3a153543d8f95e889285248e5af21af/Elvia_GridTariffAPI_for_smart_house_purposes_DIGIN.pdf) and guidance for getting a subscription key (https://www.elvia.no/smart-forbruk/api-for-nettleie-priser-kan-gjore-hjemmet-ditt-smartere/). 
 
 The app fetches grid tariffs for one meter and can be instantiated for several meters in `apps.yaml`.
 
@@ -15,8 +15,8 @@ I'm quite sure that someone will make a better integration for Home Assistant fa
 
 In `apps.yaml`, one argument is `log_progress`. When set to `true`, the app will output a log on every (hourly) run to the Appdaemon log. Set it to `false` to turn that off.
 
-If fetching grid tariffs fail for some reason, the app will output a warning to the Appdaemon log and try again once a minute until successful. If you have more than 3 meters, and to avoid hitting the API call limitation, increase the waiting period in this line (the number is the number of seconds to the next attempt - so here every minute):
+If fetching grid tariffs fail for some reason, the app will output a warning to the Appdaemon log and try again once every second minute until successful. If you have more than 6 meters, and to avoid hitting the API call limitation, increase the waiting period in this line (the number is the number of seconds to the next attempt - so here every minute):
 
 ```
-      self.fetch_data(self.hourly_call, 60)
+      self.fetch_data(self.hourly_call, 120)
 ```
