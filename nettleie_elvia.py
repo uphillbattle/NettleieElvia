@@ -17,7 +17,7 @@ class NettleieElvia(hass.Hass):
 
   def hourly_call(self, kwargs):
     self.set_times()
-    self.fetch_data(self.hourly_call, 300)
+    self.fetch_data(self.hourly_call, 120)
     self.set_correction()
     self.set_states()
 
