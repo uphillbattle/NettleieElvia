@@ -20,3 +20,5 @@ If fetching grid tariffs fails for some reason, the app will output a warning to
 ```
       self.fetch_data(self.hourly_call, 120)
 ```
+
+Make sure that `ocp_apim_subscription_key` and `malerid` are strings enclosed in " or '. Also note that Elvia now calls `ocp_apim_subscription_key` X-API-KEY.
