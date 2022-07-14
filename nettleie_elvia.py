@@ -29,11 +29,11 @@ class NettleieElvia(hass.Hass):
 
   
   def set_request_data(self):
-    self.headers   = {"X-API-Key": self.args["ocp_apim_subscription_key"],
+    self.headers   = {"X-API-Key": self.args["x_api_key"],
                       "Content-Type": "application/json",
                       "Cache-Control": "no-cache"}
     self.url       = "https://elvia.azure-api.net/grid-tariff/digin/api/1.0/tariffquery/meteringpointsgridtariffs"
-    self.body      = {"meteringPointIds": [ self.args["malerid"] ]}
+    self.body      = {"meteringPointIds": [ self.args["meterid"] ]}
 
   def set_correction_data(self):
     self.end_correction_period = datetime.datetime(2022, 4, 1)
@@ -49,17 +49,17 @@ class NettleieElvia(hass.Hass):
     self.next_hour_datetime = self.current_datetime + datetime.timedelta(hours=1)
     self.tomorrow_datetime  = self.current_datetime + datetime.timedelta(hours=24)
     self.next_day_datetime  = self.current_datetime + datetime.timedelta(hours=48)
-    self.pretty_last_hour   = str(self.current_datetime.year) + "-" + str(self.current_datetime.month).zfill(2) + "-" + \
+    self.pretty_last_night  = str(self.current_datetime.year) + "-" + str(self.current_datetime.month).zfill(2) + "-" + \
                               str(self.current_datetime.day).zfill(2) + "T" + "00:00:00" + zoneadjust
-    self.pretty_next_hour   = str(self.next_day_datetime.year) + "-" + str(self.next_day_datetime.month).zfill(2) + "-" + \
+    self.pretty_next_night  = str(self.next_day_datetime.year) + "-" + str(self.next_day_datetime.month).zfill(2) + "-" + \
                               str(self.next_day_datetime.day).zfill(2) + "T" + "00:00:00" + zoneadjust
     self.pretty_now         = str(self.current_datetime.year) + "-" + str(self.current_datetime.month).zfill(2) + "-" + \
                               str(self.current_datetime.day).zfill(2) + "T" + str(self.current_datetime.hour).zfill(2) + ":" + \
                               str(self.current_datetime.minute).zfill(2) + ":" + str(self.current_datetime.second).zfill(2) + \
                               zoneadjust
 
-    self.body["startTime"]  = self.pretty_last_hour
-    self.body["endTime"]    = self.pretty_next_hour
+    self.body["startTime"]  = self.pretty_last_night
+    self.body["endTime"]    = self.pretty_next_night
 
     self.current_hour       = self.current_datetime.hour
 
@@ -102,21 +102,14 @@ class NettleieElvia(hass.Hass):
         self.variable_price_per_hour_array_today_raw.append({"start": startTime, "end": endTime, "value": value - self.correction_today})
         self.variable_price_per_hour_array_today.append(value - self.correction_today)
         if ((self.pretty_now >= startTime) and (self.pretty_now < endTime)):
-            #self.log("__function__: Hour now found!         = %s" % self.pretty_now, log="main_log", level="INFO")
             self.variable_price_per_hour = value - self.correction_today
             forLoopBreak = False
             fixedPriceLevelId = self.maler_response["gridTariffCollections"][0]["meteringPointsAndPriceLevels"][0]["currentFixedPriceLevel"]["levelId"]
             for fixedPriceElement in self.priceInfo["priceInfo"]["fixedPrices"]:
                 if (element["fixedPrice"]["id"] == fixedPriceElement["id"]):
-                    #self.log("__function__: FixedPrice Id         = %s" % fixedPriceElement["id"], log="main_log", level="INFO")
-                    #self.log("__function__: FixedPrice levelId    = %s" % fixedPriceLevelId, log="main_log", level="INFO")
                     for priceLevelsElement in fixedPriceElement["priceLevels"]:
                         if (priceLevelsElement["id"] == fixedPriceLevelId):
                             hourPrices = priceLevelsElement["hourPrices"][0]
-                            jsondumps = json.dumps(hourPrices, indent=4)
-                            #self.log("__function__: hourPrices                = %s" % jsondumps, log="main_log", level="INFO")
-                            #self.log("__function__: hourPrice Id              = %s" % hourPrices["id"], log="main_log", level="INFO")
-                            #self.log("__function__: hourPrice total           = %f" % hourPrices["total"], log="main_log", level="INFO")
                             self.fixed_price_per_hour = hourPrices["total"]
                             forLoopBreak = True
                             break
@@ -146,8 +139,8 @@ class NettleieElvia(hass.Hass):
   def output_log(self):
     self.log("__function__: Time now              = %s" % self.current_datetime, log="main_log", level="INFO")
     self.log("__function__: Pretty time now       = %s" % self.pretty_now, log="main_log", level="INFO")
-    self.log("__function__: Pretty Last hour      = %s" % self.pretty_last_hour, log="main_log", level="INFO")
-    self.log("__function__: Pretty Next hour      = %s" % self.pretty_next_hour, log="main_log", level="INFO")
+    self.log("__function__: Pretty Last night     = %s" % self.pretty_last_night, log="main_log", level="INFO")
+    self.log("__function__: Pretty Next night     = %s" % self.pretty_next_night, log="main_log", level="INFO")
     self.log("__function__: kapasitetsledd (NOK/h)= %f" % self.fixed_price_per_hour, log="main_log", level="INFO")
     self.log("__function__: forbruksledd (NOK/kWh)= %f" % self.variable_price_per_hour, log="main_log", level="INFO")
     self.log("__function__: Next call             = %s" % self.next_call, log="main_log", level="INFO")

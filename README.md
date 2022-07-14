@@ -7,8 +7,6 @@ A very crude AppDaemon app for use with Home Assistant that fetches grid tariffs
 
 The app fetches grid tariffs for one meter and can be instantiated for several meters in `apps.yaml`.
 
-As of April 2022 the app is not particularly useful since the grid tariffs (for consumers) is constant (except summer/winter tariffs in some areas). However, the gridd tariff is expected to change during 2022, so that the variable grid tariffs (NOK/kWh) will change on an hourly basis and the fixed grid tariffs (NOK/h) will change on a monthly basis.
-
 The app fetches the grid tariffs 5 seconds into each hour. Since the tariffs will not change more often than hourly, fetching it more often is pointless. Elvia has set an API call limit of 200 calls per hour per user, so if you have 3 meters, you could call the API every minute (180 calls per hour) instead of every hour (3 calls per hour), but why would you?
 
 I'm quite sure that someone will make a better integration for Home Assistant fairly soon - at which time this app will be obsolete - and I'm looking forward to that.
@@ -21,4 +19,4 @@ If fetching grid tariffs fails for some reason, the app will output a warning to
       self.fetch_data(self.hourly_call, 120)
 ```
 
-Make sure that `ocp_apim_subscription_key` and `malerid` are strings enclosed in " or '. Also note that Elvia now calls `ocp_apim_subscription_key` X-API-KEY.
+Make sure that `x_api_key` and `meterid` are strings enclosed in " or '.
