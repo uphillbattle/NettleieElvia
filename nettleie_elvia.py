@@ -19,7 +19,7 @@ class NettleieElvia(hass.Hass):
     self.set_times()
     self.fetch_data(self.hourly_call, 120)
     self.set_correction()
-    self.set_states()
+    self.set_states(self.hourly_call, 120)
 
     self.next_call = self.next_hour_datetime.replace(second=5, microsecond=0, minute=0)
     self.run_at_handle = self.run_at(self.hourly_call, self.next_call)
@@ -86,8 +86,12 @@ class NettleieElvia(hass.Hass):
       self.correction_tomorrow = 0.0
 
 
-  def set_states(self):
-    self.maler_response = json.loads(self.maler_response_json.text)
+  def set_states(self, retry_function, wait_period):
+    try:
+      self.maler_response = json.loads(self.maler_response_json.text)
+    except Exception as e:
+      self.log('__function__: Ooops, API response could not be read, retrying in {} seconds...\n{}'.format(wait_period, e), log="main_log", level="WARNING")
+      self.run_in(retry_function, wait_period)
     self.priceInfo      = self.maler_response["gridTariffCollections"][0]["gridTariff"]["tariffPrice"]
 
     self.variable_price_per_hour_array_today_raw    = []
