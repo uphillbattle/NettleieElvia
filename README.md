@@ -1,8 +1,5 @@
 # NettleieElvia
 
-*Updated on 2022-07-06:* 
-Update to new formats in connection with new tariffs from 1st July 2022.
-
 A very crude AppDaemon app for use with Home Assistant that fetches grid tariffs (NOK per hour and NOK per kWh) from Elvia's new GridTariff API (https://elvia.portal.azure-api.net/). Refer to the API for documentation (https://assets.ctfassets.net/jbub5thfds15/3Jm2yspPw1kFmDEkzdjhfw/e3a153543d8f95e889285248e5af21af/Elvia_GridTariffAPI_for_smart_house_purposes_DIGIN.pdf) and guidance for getting a subscription key (https://www.elvia.no/smart-forbruk/api-for-nettleie-priser-kan-gjore-hjemmet-ditt-smartere/). 
 
 The app fetches grid tariffs for one meter and can be instantiated for several meters in `apps.yaml`.
