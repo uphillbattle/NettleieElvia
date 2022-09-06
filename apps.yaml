@@ -4,6 +4,7 @@ nettleie_elvia_hytta:
   class: NettleieElvia
   log_progress: true
   x_api_key: !secret elvia_subscription_key
+  token: !secret elvia_HA_token
   meterid: !secret elvia_malerid_hytta
   sensorname: 'sensor.nettleie_hytta'
   sensoralias: 'Nettleie hytta'
@@ -12,6 +13,7 @@ nettleie_elvia_oppe:
   class: NettleieElvia
   log_progress: true
   x_api_key: !secret elvia_subscription_key
+  token: !secret elvia_HA_token
   meterid: !secret elvia_malerid_oppe
   sensorname: 'sensor.nettleie_hjemme_oppe'
   sensoralias: 'Nettleie hjemme oppe'
@@ -20,6 +22,7 @@ nettleie_elvia_nede:
   class: NettleieElvia
   log_progress: true
   x_api_key: !secret elvia_subscription_key
+  token: !secret elvia_HA_token
   meterid: !secret elvia_malerid_nede
   sensorname: 'sensor.nettleie_hjemme_nede'
   sensoralias: 'Nettleie hjemme nede'
