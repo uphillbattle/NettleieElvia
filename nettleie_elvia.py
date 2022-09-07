@@ -163,6 +163,20 @@ class NettleieElvia(hass.Hass):
                                'max_hourly_consumptions_this_month': self.maxhours_max_consumption_this_month, \
                                'average_max_consumption_last_month': self.maxhours_average_consumption_last_month, \
                                'max_hourly_consumptions_last_month': self.maxhours_max_consumption_last_month})
+    self.set_state(self.args["sensorname"] + '_kapasitetsledd_trinn',\
+                   state=self.fixed_price_levelInfo, \
+                   attributes={'friendly_name': self.args["sensoralias"] + ' kapasitetsledd trinn', \
+                               'icon': 'mdi:stairs'})
+    self.set_state(self.args["sensorname"] + '_kapasitetsledd_mnd',\
+                   state=self.fixed_price_per_month, \
+                   attributes={'friendly_name': self.args["sensoralias"] + ' kapasitetsledd per måned', \
+                               'unit_of_measurement': 'NOK/mnd', \
+                               'icon': 'mdi:currency-usd'})
+    self.set_state(self.args["sensorname"] + '_effekt',\
+                   state=self.maxhours_average_consumption_this_month, \
+                   attributes={'friendly_name': self.args["sensoralias"] + ' kapasitetsleddsbestemmende effekt', \
+                               'unit_of_measurement': 'kWh/h', \
+                               'icon': 'mdi:lightning-bolt'})
 
     self.set_state(self.args["sensorname"] + '_forbruksledd', \
                    state=self.variable_price_per_hour, \
