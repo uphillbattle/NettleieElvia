@@ -1,6 +1,6 @@
 # NettleieElvia
 
-A very crude AppDaemon app for use with Home Assistant that fetches grid tariffs (NOK per hour and NOK per kWh) from Elvia's new GridTariff API (https://elvia.portal.azure-api.net/). Refer to the API for documentation (https://assets.ctfassets.net/jbub5thfds15/3Jm2yspPw1kFmDEkzdjhfw/e3a153543d8f95e889285248e5af21af/Elvia_GridTariffAPI_for_smart_house_purposes_DIGIN.pdf) and guidance for getting a subscription key (https://www.elvia.no/smart-forbruk/api-for-nettleie-priser-kan-gjore-hjemmet-ditt-smartere/). 
+A very crude AppDaemon app for use with Home Assistant that fetches grid tariffs (NOK per hour and NOK per kWh) from Elvia's new GridTariff API (https://elvia.portal.azure-api.net/). Refer to the API for documentation (https://assets.ctfassets.net/jbub5thfds15/3Jm2yspPw1kFmDEkzdjhfw/e3a153543d8f95e889285248e5af21af/Elvia_GridTariffAPI_for_smart_house_purposes_DIGIN.pdf) and guidance for getting a subscription key `x_api_key` (https://www.elvia.no/smart-forbruk/api-for-nettleie-priser-kan-gjore-hjemmet-ditt-smartere/). You also need an `AccessToken` in order to fetch information about the three maximum hourly consumptions and the level for the fixed price part of the grid tariff.
 
 The app fetches grid tariffs for one meter and can be instantiated for several meters in `apps.yaml`.
 
@@ -16,4 +16,4 @@ If fetching grid tariffs fails for some reason, the app will output a warning to
       self.fetch_data(self.hourly_call, 120)
 ```
 
-Make sure that `x_api_key` and `meterid` are strings enclosed in " or '.
+Make sure that `x_api_key`, `token` (`AccessToken`) and `meterid` are strings enclosed in " or '.
