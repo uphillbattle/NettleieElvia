@@ -29,15 +29,19 @@ class NettleieElvia(hass.Hass):
 
   
   def set_request_data(self):
-    self.headers   = {"X-API-Key": self.args["x_api_key"],
-                      "Content-Type": "application/json",
-                      "Cache-Control": "no-cache"}
-    self.url       = "https://elvia.azure-api.net/grid-tariff/digin/api/1.0/tariffquery/meteringpointsgridtariffs"
-    self.body      = {"meteringPointIds": [ self.args["meterid"] ]}
+    self.headers_tariff   = {"X-API-Key": self.args["x_api_key"],
+                             "Content-Type": "application/json",
+                             "Cache-Control": "no-cache"}
+    self.url_tariff       = "https://elvia.azure-api.net/grid-tariff/digin/api/1.0/tariffquery/meteringpointsgridtariffs"
+    self.body_tariff      = {"meteringPointIds": [ self.args["meterid"] ]}
+    self.headers_maxhours = {"Authorization": "Bearer " + self.args["token"]}
+    self.url_maxhours     = "https://elvia.azure-api.net/customer/metervalues/api/v2/maxhours?meteringPointIds=" + self.args["meterid"]
+
 
   def set_correction_data(self):
     self.end_correction_period = datetime.datetime(2022, 4, 1)
     self.correction_amount     = (0.1669 - 0.0891)*1.25
+
 
   def set_times(self):
     localtime = time.localtime()
@@ -58,8 +62,8 @@ class NettleieElvia(hass.Hass):
                               str(self.current_datetime.minute).zfill(2) + ":" + str(self.current_datetime.second).zfill(2) + \
                               zoneadjust
 
-    self.body["startTime"]  = self.pretty_last_night
-    self.body["endTime"]    = self.pretty_next_night
+    self.body_tariff["startTime"]  = self.pretty_last_night
+    self.body_tariff["endTime"]    = self.pretty_next_night
 
     self.current_hour       = self.current_datetime.hour
 
@@ -69,9 +73,14 @@ class NettleieElvia(hass.Hass):
 
   def fetch_data(self, retry_function, wait_period):
     try:
-      self.maler_response_json     = requests.post(self.url, json = self.body, headers = self.headers)
+      self.tariff_response_json    = requests.post(self.url_tariff, json = self.body_tariff, headers = self.headers_tariff)
     except Exception as e:
-      self.log('__function__: Ooops, API request failed, retrying in {} seconds...\n{}'.format(wait_period, e), log="main_log", level="WARNING")
+      self.log('__function__: Ooops, tariff API request failed, retrying in {} seconds...\n{}'.format(wait_period, e), log="main_log", level="WARNING")
+      self.run_in(retry_function, wait_period)
+    try:
+      self.maxhours_response_json  = requests.get(self.url_maxhours, headers = self.headers_maxhours)
+    except Exception as e:
+      self.log('__function__: Ooops, maxhours API request failed, retrying in {} seconds...\n{}'.format(wait_period, e), log="main_log", level="WARNING")
       self.run_in(retry_function, wait_period)
 
 
@@ -88,11 +97,11 @@ class NettleieElvia(hass.Hass):
 
   def set_states(self, retry_function, wait_period):
     try:
-      self.maler_response = json.loads(self.maler_response_json.text)
+      self.tariff_response = json.loads(self.tariff_response_json.text)
     except Exception as e:
-      self.log('__function__: Ooops, API response could not be read, retrying in {} seconds...\n{}'.format(wait_period, e), log="main_log", level="WARNING")
+      self.log('__function__: Ooops, tariff API response could not be read, retrying in {} seconds...\n{}'.format(wait_period, e), log="main_log", level="WARNING")
       self.run_in(retry_function, wait_period)
-    self.priceInfo      = self.maler_response["gridTariffCollections"][0]["gridTariff"]["tariffPrice"]
+    self.priceInfo      = self.tariff_response["gridTariffCollections"][0]["gridTariff"]["tariffPrice"]
 
     self.variable_price_per_hour_array_today_raw    = []
     self.variable_price_per_hour_array_tomorrow_raw = []
@@ -108,13 +117,15 @@ class NettleieElvia(hass.Hass):
         if ((self.pretty_now >= startTime) and (self.pretty_now < endTime)):
             self.variable_price_per_hour = value - self.correction_today
             forLoopBreak = False
-            fixedPriceLevelId = self.maler_response["gridTariffCollections"][0]["meteringPointsAndPriceLevels"][0]["currentFixedPriceLevel"]["levelId"]
+            fixedPriceLevelId = self.tariff_response["gridTariffCollections"][0]["meteringPointsAndPriceLevels"][0]["currentFixedPriceLevel"]["levelId"]
             for fixedPriceElement in self.priceInfo["priceInfo"]["fixedPrices"]:
                 if (element["fixedPrice"]["id"] == fixedPriceElement["id"]):
                     for priceLevelsElement in fixedPriceElement["priceLevels"]:
                         if (priceLevelsElement["id"] == fixedPriceLevelId):
                             hourPrices = priceLevelsElement["hourPrices"][0]
                             self.fixed_price_per_hour = hourPrices["total"]
+                            self.fixed_price_levelInfo = priceLevelsElement["levelInfo"]
+                            self.fixed_price_per_month = priceLevelsElement["monthlyTotal"]
                             forLoopBreak = True
                             break
                     if (forLoopBreak == True):
@@ -123,11 +134,49 @@ class NettleieElvia(hass.Hass):
         self.variable_price_per_hour_array_tomorrow_raw.append({"start": startTime, "end": endTime, "value": value - self.correction_tomorrow})
         self.variable_price_per_hour_array_tomorrow.append(value - self.correction_tomorrow)
 
+    try:
+      self.maxhours_response = json.loads(self.maxhours_response_json.text)
+    except Exception as e:
+      self.log('__function__: Ooops, maxhours API response could not be read, retrying in {} seconds...\n{}'.format(wait_period, e), log="main_log", level="WARNING")
+      self.run_in(retry_function, wait_period)
+
+    self.maxhours_max_consumption_this_month = []
+    self.maxhours_max_consumption_last_month = []
+    for element in self.maxhours_response["meteringpoints"][0]["maxHoursAggregate"]:
+      if element["noOfMonthsBack"] == 0:
+        self.maxhours_average_consumption_this_month = element["averageValue"]
+        for maxHoursElement in element["maxHours"]:
+          self.maxhours_max_consumption_this_month.append({"startTime": maxHoursElement["startTime"], "value": maxHoursElement["value"]})
+      else:
+        self.maxhours_average_consumption_last_month = element["averageValue"]
+        for maxHoursElement in element["maxHours"]:
+          self.maxhours_max_consumption_last_month.append({"startTime": maxHoursElement["startTime"], "value": maxHoursElement["value"]})
+
     self.set_state(self.args["sensorname"] + '_kapasitetsledd', \
                    state=self.fixed_price_per_hour, \
                    attributes={'friendly_name': self.args["sensoralias"] + ' per time', \
                                'unit_of_measurement': 'NOK/h', \
+                               'icon': 'mdi:currency-usd', \
+                               'level_info': self.fixed_price_levelInfo, \
+                               'monthly_total': self.fixed_price_per_month, \
+                               'average_max_consumption_this_month': self.maxhours_average_consumption_this_month, \
+                               'max_hourly_consumptions_this_month': self.maxhours_max_consumption_this_month, \
+                               'average_max_consumption_last_month': self.maxhours_average_consumption_last_month, \
+                               'max_hourly_consumptions_last_month': self.maxhours_max_consumption_last_month})
+    self.set_state(self.args["sensorname"] + '_kapasitetsledd_trinn',\
+                   state=self.fixed_price_levelInfo, \
+                   attributes={'friendly_name': self.args["sensoralias"] + ' kapasitetsledd trinn', \
+                               'icon': 'mdi:stairs'})
+    self.set_state(self.args["sensorname"] + '_kapasitetsledd_mnd',\
+                   state=self.fixed_price_per_month, \
+                   attributes={'friendly_name': self.args["sensoralias"] + ' kapasitetsledd per måned', \
+                               'unit_of_measurement': 'NOK/mnd', \
                                'icon': 'mdi:currency-usd'})
+    self.set_state(self.args["sensorname"] + '_effekt',\
+                   state=self.maxhours_average_consumption_this_month, \
+                   attributes={'friendly_name': self.args["sensoralias"] + ' kapasitetsleddsbestemmende effekt', \
+                               'unit_of_measurement': 'kWh/h', \
+                               'icon': 'mdi:lightning-bolt'})
 
     self.set_state(self.args["sensorname"] + '_forbruksledd', \
                    state=self.variable_price_per_hour, \
