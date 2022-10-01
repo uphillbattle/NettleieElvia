@@ -142,6 +142,8 @@ class NettleieElvia(hass.Hass):
 
     self.maxhours_max_consumption_this_month = []
     self.maxhours_max_consumption_last_month = []
+    self.maxhours_average_consumption_this_month = 0
+    self.maxhours_average_consumption_last_month = 0
     for element in self.maxhours_response["meteringpoints"][0]["maxHoursAggregate"]:
       if element["noOfMonthsBack"] == 0:
         self.maxhours_average_consumption_this_month = element["averageValue"]
