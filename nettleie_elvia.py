@@ -134,8 +134,10 @@ class NettleieElvia(hass.Hass):
       self.log('__function__: Ooops, maxhours API response could not be read, retrying in {} seconds...\n{}'.format(wait_period, e), log="main_log", level="WARNING")
       self.run_in(retry_function, wait_period)
 
-    self.maxhours_max_consumption_this_month = []
-    self.maxhours_max_consumption_last_month = []
+    self.maxhours_max_consumption_this_month     = []
+    self.maxhours_max_consumption_last_month     = []
+    self.maxhours_average_consumption_this_month = [] 
+    self.maxhours_average_consumption_last_month = []
     for element in self.maxhours_response["meteringpoints"][0]["maxHoursAggregate"]:
       if element["noOfMonthsBack"] == 0:
         self.maxhours_average_consumption_this_month = element["averageValue"]
